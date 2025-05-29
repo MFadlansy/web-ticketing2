@@ -7,60 +7,109 @@
     <title th:text="${event.namaEvent} + ' Detail'"></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        .event-image-container {
+            width: 100%;
+            padding-top: 56.25%; /* Rasio aspek 16:9 */
+            position: relative;
+            background-color: #e2e8f0;
+            border-radius: 0.75rem; /* rounded-xl */
+            overflow: hidden;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* shadow-lg */
+        }
+        .event-image-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .no-image-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+        }
     </style>
 </head>
 
 <body class="bg-gray-100">
-    <nav class="bg-indigo-600 p-4 shadow-md">
+    <nav class="bg-gradient-to-r from-indigo-700 to-indigo-900 p-4 shadow-xl">
         <div class="container mx-auto flex justify-between items-center">
-            <a href="/dashboard" class="text-white text-2xl font-bold">TiketApp</a>
-            <div class="flex items-center space-x-4">
+            <a href="/dashboard" class="text-white text-3xl font-extrabold tracking-wide drop-shadow-md">TiketApp</a>
+            <div class="flex items-center space-x-5">
                 <div sec:authorize="isAuthenticated()" th:if="${username != null}">
-                    <span class="text-white">Selamat datang, <span th:text="${username}"></span>!</span>
+                    <span class="text-white text-lg font-semibold">Selamat datang, <span th:text="${username}"></span>!</span>
                     <a th:href="@{/logout}"
-                        class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out">Logout</a>
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">Logout</a>
                 </div>
-                <div sec:authorize="isAnonymous()">
-                    <a th:href="@{/events}" class="text-white hover:text-gray-200">Kembali ke Event</a>
-                    <a th:href="@{/login}" class="text-white hover:text-gray-200">Login</a>
+                <div sec:authorize="isAnonymous()" class="space-x-4">
+                    <a th:href="@{/events}" class="text-white hover:text-gray-200 font-semibold transition duration-200 ease-in-out hover:underline">Kembali ke Event</a>
+                    <a th:href="@{/login}" class="text-white hover:text-gray-200 font-semibold transition duration-200 ease-in-out hover:underline">Login</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto p-8 mt-8 bg-white rounded-lg shadow-xl">
-        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8" th:text="${event.namaEvent}">Event Name</h1>
+    <div class="container mx-auto p-10 mt-8 bg-white rounded-2xl shadow-3xl">
+        <h1 class="text-5xl font-extrabold text-center text-gray-900 mb-8 leading-tight" th:text="${event.namaEvent}">Nama Event</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
             <div>
-                <img th:if="${event.gambar != null and event.gambar.length > 0}"
-                    th:src="@{/events/image/{id}(id=${event.id})}" alt="Event Image"
-                    class="w-full h-auto rounded-lg shadow-md">
-                <div th:unless="${event.gambar != null and event.gambar.length > 0}"
-                    class="w-full h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg shadow-md">
-                    Tidak ada gambar
+                <div class="event-image-container shadow-xl">
+                    <img th:if="${event.gambar != null and event.gambar.length > 0}"
+                        th:src="@{/events/image/{id}(id=${event.id})}" alt="Event Image">
+                    <div th:unless="${event.gambar != null and event.gambar.length > 0}"
+                        class="no-image-placeholder">
+                        <i class="fas fa-image text-gray-400 mr-2 text-3xl"></i> Tidak ada gambar
+                    </div>
                 </div>
             </div>
-            <div>
-                <p class="text-lg text-gray-700 mb-4"><span class="font-semibold">Deskripsi:</span> <span
-                        th:text="${event.deskripsi}"></span></p>
-                <ul class="text-gray-700 space-y-2">
-                    <li><span class="font-semibold">Tipe Event:</span> <span th:text="${event.tipeEvent}"></span></li>
-                    <li><span class="font-semibold">Tanggal:</span> <span
-                            th:text="${#temporals.format(event.tanggal, 'dd MMMM yyyy')}"></span></li>
-                    <li><span class="font-semibold">Lokasi:</span> <span th:text="${event.lokasi}"></span></li>
-                    <li class="text-2xl font-bold text-indigo-700 mt-4">Harga Tiket: Rp<span
-                            th:text="${#numbers.formatDecimal(event.hargaTiket, 0, 'POINT', 0, 'COMMA')}"></span></li>
-                </ul>
-                <a th:href="@{/events/{id}/order(id=${event.id})}"
-                    class="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
-                    Pesan Tiket
-                </a>
+
+            <div class="flex flex-col h-full">
+                <div class="mb-6 bg-gray-50 p-6 rounded-lg shadow-inner">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-3 flex items-center"><i class="fas fa-info-circle text-indigo-500 mr-3"></i>Deskripsi Event</h2>
+                    <p class="text-base text-gray-700 leading-relaxed" th:text="${event.deskripsi}"></p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 mb-6 p-6 bg-gray-50 rounded-lg shadow-inner">
+                    <div>
+                        <p class="font-semibold text-gray-800 flex items-center mb-1"><i class="fas fa-tag text-indigo-500 mr-2"></i>Tipe Event:</p>
+                        <p th:text="${event.tipeEvent}" class="text-lg"></p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800 flex items-center mb-1"><i class="fas fa-calendar-day text-indigo-500 mr-2"></i>Tanggal:</p>
+                        <p th:text="${#temporals.format(event.tanggal, 'dd MMMM yyyy')}" class="text-lg"></p>
+                    </div>
+                    <div class="col-span-full">
+                        <p class="font-semibold text-gray-800 flex items-center mb-1"><i class="fas fa-map-marker-alt text-indigo-500 mr-2"></i>Lokasi:</p>
+                        <p th:text="${event.lokasi}" class="text-lg"></p>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-6 border-t border-gray-200">
+                    <p class="text-4xl font-black text-indigo-700 mb-6 flex items-center justify-center">
+                        Harga Tiket: <span class="ml-2">Rp<span
+                            th:text="${#numbers.formatDecimal(event.hargaTiket, 0, 'POINT', 0, 'COMMA')}"></span></span>
+                    </p>
+                    <a th:href="@{/events/{id}/order(id=${event.id})}"
+                        class="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-150 ease-in-out transform hover:scale-105">
+                        Pesan Tiket Sekarang <i class="fas fa-ticket-alt ml-3"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

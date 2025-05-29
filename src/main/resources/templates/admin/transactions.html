@@ -7,13 +7,13 @@
     <title>Kelola Transaksi - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
 
-        /* Kelas untuk backdrop modal */
         .modal-backdrop {
             position: fixed;
             top: 0;
@@ -27,14 +27,13 @@
             z-index: 1000;
         }
 
-        /* Kelas untuk modal content */
         .modal-content {
             background-color: white;
             padding: 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.25); /* shadow-2xl */
             max-width: 90%;
-            width: 400px;
+            width: 500px;
             text-align: center;
             position: relative;
         }
@@ -43,28 +42,34 @@
             position: absolute;
             top: 1rem;
             right: 1rem;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
             color: #4a5568;
-            /* gray-700 */
         }
+        .action-button {
+            @apply inline-flex items-center justify-center py-2 px-3 text-xs font-semibold rounded-md transition duration-150 ease-in-out;
+        }
+        .action-button.edit { @apply bg-indigo-500 hover:bg-indigo-600 text-white; }
+        .action-button.delete { @apply bg-red-500 hover:bg-red-600 text-white; }
+        .action-button.view-proof { @apply bg-blue-500 hover:bg-blue-600 text-white; }
+        .action-button.view-ticket { @apply bg-purple-500 hover:bg-purple-600 text-white; }
     </style>
 </head>
 
 <body class="bg-gray-100">
-    <nav class="bg-indigo-600 p-4 shadow-md">
+    <nav class="bg-gradient-to-r from-indigo-700 to-indigo-900 p-4 shadow-xl">
         <div class="container mx-auto flex justify-between items-center">
-            <a href="/dashboard" class="text-white text-2xl font-bold">TiketApp Admin</a>
-            <div class="flex items-center space-x-4">
-                <span class="text-white">Selamat datang, Admin!</span>
+            <a href="/dashboard" class="text-white text-3xl font-extrabold tracking-wide drop-shadow-md">TiketApp Admin</a>
+            <div class="flex items-center space-x-5">
+                <span class="text-white text-lg font-semibold">Selamat datang, Admin!</span>
                 <a th:href="@{/logout}"
-                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out">Logout</a>
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg">Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto p-8 mt-8 bg-white rounded-lg shadow-xl">
-        <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Kelola Transaksi</h1>
+    <div class="container mx-auto p-10 mt-8 bg-white rounded-2xl shadow-3xl">
+        <h1 class="text-5xl font-extrabold text-gray-800 mb-6 text-center">Kelola <span class="text-indigo-600">Transaksi</span></h1>
 
         <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4"
             role="alert">
@@ -75,72 +80,72 @@
             <span class="block sm:inline" th:text="${message}"></span>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto shadow-md rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">ID
                             Transaksi</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                             Pengguna</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Event
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                             Jumlah Tiket</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Total
                             Harga</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                             Status</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                             Tanggal Transaksi</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batas
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Batas
                             Waktu Bayar</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Waktu
                             Upload Bukti</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Bukti
                             Pembayaran</th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiket
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Tiket
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Aksi
                         </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <tr th:each="transaction : ${transactions}">
+                    <tr th:each="transaction : ${transactions}" class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
                             th:text="${transaction.id}"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
                             th:text="${transaction.user.username}"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
                             th:text="${transaction.event.namaEvent}"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
                             th:text="${transaction.jumlahTiket}"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
                             th:text="${#numbers.formatDecimal(transaction.totalHarga, 0, 'POINT', 0, 'COMMA')}"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm"
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold"
                             th:classappend="${transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).PENDING_UPLOAD ? 'text-yellow-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).PENDING_CONFIRMATION ? 'text-blue-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).CONFIRMED ? 'text-green-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).COMPLETED ? 'text-purple-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).CANCELLED ? 'text-red-600' : ''))))}"
                             th:text="${transaction.status}"></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
                             th:text="${#temporals.format(transaction.tanggalTransaksi, 'dd MMMM HH:mm')}">
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             <span th:if="${transaction.batasWaktuPembayaran}"
                                 th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMM HH:mm')}"></span>
                             <span th:unless="${transaction.batasWaktuPembayaran}">-</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             <span th:if="${transaction.waktuUploadBukti}"
                                 th:text="${#temporals.format(transaction.waktuUploadBukti, 'dd MMMM HH:mm')}"></span>
                             <span th:unless="${transaction.waktuUploadBukti}">-</span>
@@ -148,48 +153,62 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <a th:if="${transaction.buktiPembayaran != null and transaction.buktiPembayaran.length > 0}"
                                 th:href="@{/admin/transactions/proof/{id}(id=${transaction.id})}" target="_blank"
-                                class="text-blue-600 hover:text-blue-900">Lihat Bukti</a>
+                                class="action-button view-proof">
+                                <i class="fas fa-eye mr-1"></i> Lihat Bukti
+                            </a>
                             <span
                                 th:unless="${transaction.buktiPembayaran != null and transaction.buktiPembayaran.length > 0}"
-                                class="text-gray-400 text-xs">Belum ada</span>
+                                class="text-gray-400 text-xs flex items-center">
+                                <i class="fas fa-times-circle mr-1"></i> Belum ada
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <button
                                 th:if="${transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).COMPLETED and transaction.dataTiket != null}"
                                 th:onclick="'showTicketModal(' + ${transaction.id} + ')'"
-                                class="text-purple-600 hover:text-purple-900 mr-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Lihat
-                                Tiket</button>
+                                class="action-button view-ticket">
+                                <i class="fas fa-qrcode mr-1"></i> Lihat Tiket
+                            </button>
                             <span th:unless="${transaction.dataTiket != null and transaction.dataTiket.length > 0}"
-                                class="text-gray-400 text-xs">Belum ada</span>
+                                class="text-gray-400 text-xs flex items-center">
+                                <i class="fas fa-times-circle mr-1"></i> Belum ada
+                            </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
                             <a th:href="@{/admin/transactions/edit/{id}(id=${transaction.id})}"
-                                class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                                class="action-button edit">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </a>
                             <a th:href="@{/admin/transactions/delete/{id}(id=${transaction.id})}"
-                                class="text-red-600 hover:text-red-900"
-                                onclick="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?');">Hapus</a>
+                                class="action-button delete"
+                                onclick="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?');">
+                                <i class="fas fa-trash-alt mr-1"></i> Hapus
+                            </a>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <div th:if="${#lists.isEmpty(transactions)}" class="text-center text-gray-500 mt-4">
-                Belum ada transaksi.
+            <div th:if="${#lists.isEmpty(transactions)}" class="text-center text-gray-500 mt-8 py-10">
+                <i class="fas fa-box-open text-4xl mb-4"></i>
+                <p class="text-xl font-semibold">Belum ada transaksi.</p>
             </div>
         </div>
     </div>
     <div id="ticketModal" class="modal-backdrop hidden">
         <div class="modal-content">
             <span class="close-button" onclick="closeTicketModal()">&times;</span>
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">Detail Tiket</h3>
-            <img id="qrCodeImage" src="" alt="QR Code Tiket" class="w-48 h-48 mx-auto my-4 border p-2 rounded-md">
-            <p class="text-gray-700 text-lg font-semibold mb-1">Event: <span id="modalEventName"></span></p>
-            <p class="text-gray-700 text-md mb-1">Pengguna: <span id="modalUsername"></span></p>
-            <p class="text-gray-700 text-md mb-1">Email: <span id="modalUserEmail"></span></p>
-            <p class="text-gray-700 text-md mb-1">Jumlah Tiket: <span id="modalJumlahTiket"></span></p>
-            <p class="text-indigo-700 text-xl font-bold mt-2">Total Harga: Rp<span id="modalTotalHarga"></span></p>
+            <h3 class="text-3xl font-bold text-gray-800 mb-4">Detail Tiket</h3>
+            <img id="qrCodeImage" src="" alt="QR Code Tiket" class="w-48 h-48 mx-auto my-6 border-4 border-indigo-200 p-2 rounded-lg shadow-md">
+            <div class="text-left p-4 bg-gray-50 rounded-lg mb-4">
+                <p class="text-gray-700 text-lg font-semibold mb-1 flex items-center"><i class="fas fa-calendar-star text-indigo-500 mr-3"></i>Event: <span id="modalEventName" class="ml-2 font-medium"></span></p>
+                <p class="text-gray-700 text-md mb-1 flex items-center"><i class="fas fa-user text-indigo-500 mr-3"></i>Pengguna: <span id="modalUsername" class="ml-2 font-medium"></span></p>
+                <p class="text-gray-700 text-md mb-1 flex items-center"><i class="fas fa-envelope text-indigo-500 mr-3"></i>Email: <span id="modalUserEmail" class="ml-2 font-medium"></span></p>
+                <p class="text-gray-700 text-md mb-1 flex items-center"><i class="fas fa-ticket-alt text-indigo-500 mr-3"></i>Jumlah Tiket: <span id="modalJumlahTiket" class="ml-2 font-medium"></span></p>
+                <p class="text-indigo-700 text-2xl font-black mt-4 flex items-center"><i class="fas fa-money-bill-wave text-indigo-500 mr-3"></i>Total Harga: Rp<span id="modalTotalHarga" class="ml-1"></span></p>
+            </div>
             <button onclick="downloadCurrentTicket()"
-                class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 ease-in-out">
-                Unduh Tiket (QR Code)
+                class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md shadow-lg transition duration-150 ease-in-out transform hover:scale-105">
+                <i class="fas fa-download mr-2"></i> Unduh Tiket (QR Code)
             </button>
         </div>
     </div>

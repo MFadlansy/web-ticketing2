@@ -7,17 +7,25 @@
     <title>Pesan Tiket - <span th:text="${event.namaEvent}"></span></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
     </style>
 </head>
 
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Pesan Tiket</h2>
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md animate-fade-in">
+        <h2 class="text-4xl font-extrabold text-center text-gray-800 mb-8">Konfirmasi <span class="text-blue-600">Pemesanan</span></h2>
 
         <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4"
             role="alert">
@@ -28,32 +36,36 @@
             <span class="block sm:inline" th:text="${message}"></span>
         </div>
 
-        <div class="mb-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h3 class="text-xl font-semibold text-gray-800 mb-2" th:text="${event.namaEvent}">Nama Event</h3>
-            <p class="text-sm text-gray-600">Tanggal: <span
-                    th:text="${#temporals.format(event.tanggal, 'dd MMMM yyyy')}"></span></p>
-            <p class="text-sm text-gray-600">Lokasi: <span th:text="${event.lokasi}"></span></p>
-            <p class="text-lg font-bold text-indigo-700 mt-2">Harga Tiket: Rp<span
-                    th:text="${#numbers.formatDecimal(event.hargaTiket, 0, 'POINT', 0, 'COMMA')}"></span></p>
+        <div class="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50 shadow-inner">
+            <h3 class="text-2xl font-bold text-gray-800 mb-3 flex items-center"><i class="fas fa-calendar-star text-indigo-500 mr-3"></i>Detail Event: <span th:text="${event.namaEvent}" class="ml-2"></span></h3>
+            <p class="text-md text-gray-600 mb-1 flex items-center"><i class="fas fa-calendar-day text-gray-500 mr-2"></i>Tanggal: <span
+                    th:text="${#temporals.format(event.tanggal, 'dd MMMM yyyy')}" class="ml-1 font-medium"></span></p>
+            <p class="text-md text-gray-600 mb-1 flex items-center"><i class="fas fa-map-marker-alt text-gray-500 mr-2"></i>Lokasi: <span th:text="${event.lokasi}" class="ml-1 font-medium"></span></p>
+            <p class="text-2xl font-extrabold text-indigo-700 mt-4 flex items-center justify-center">Harga Tiket: <span class="ml-2">Rp<span
+                    th:text="${#numbers.formatDecimal(event.hargaTiket, 0, 'POINT', 0, 'COMMA')}"></span></span></p>
         </div>
 
         <form th:action="@{/events/{id}/order(id=${event.id})}" th:object="${transaction}" method="post"
             class="space-y-6">
             <div>
                 <label for="jumlahTiket" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tiket:</label>
-                <input type="number" id="jumlahTiket" th:field="*{jumlahTiket}" min="1" value="1" required
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <div class="relative">
+                    <input type="number" id="jumlahTiket" th:field="*{jumlahTiket}" min="1" value="1" required
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pr-10">
+                    <i class="fas fa-sort-numeric-up-alt absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
             </div>
             <div>
                 <button type="submit"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                    Konfirmasi Pemesanan
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-lg text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out transform hover:scale-105">
+                    Konfirmasi Pemesanan <i class="fas fa-check-circle ml-3"></i>
                 </button>
             </div>
         </form>
         <div class="mt-6 text-center">
-            <a th:href="@{/events/{id}(id=${event.id})}" class="font-medium text-gray-600 hover:text-gray-500">Kembali
-                ke Detail Event</a>
+            <a th:href="@{/events/{id}(id=${event.id})}" class="font-medium text-gray-600 hover:text-gray-500 hover:underline">
+                <i class="fas fa-arrow-left mr-2"></i> Kembali ke Detail Event
+            </a>
         </div>
     </div>
 </body>
