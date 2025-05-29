@@ -22,14 +22,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.web_tiket.dto.TicketDetailsDto;
 import com.example.web_tiket.model.Event;
-import com.example.web_tiket.model.Role; // Pastikan ini diimpor
+import com.example.web_tiket.model.Role;
 import com.example.web_tiket.model.Transaction;
 import com.example.web_tiket.model.Transaction.TransactionStatus;
 import com.example.web_tiket.model.User;
 import com.example.web_tiket.repository.UserRepository;
 import com.example.web_tiket.service.EventService;
-import com.example.web_tiket.service.TransactionService;
+import com.example.web_tiket.service.TransactionService; // Import DTO yang baru
 
 
 @Controller
@@ -190,25 +191,31 @@ public class TransactionController {
         }
     }
 
-    // Endpoint untuk mengunduh tiket (gambar QR Code)
-    @GetMapping("/my-transactions/ticket/{id}")
-    public ResponseEntity<byte[]> downloadTicket(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    /**
+     * Endpoint untuk melayani gambar QR Code tiket.
+     * Tidak lagi memaksa unduhan, tetapi hanya menampilkan gambar.
+     * @param id ID transaksi
+     * @param redirectAttributes untuk pesan error jika ada
+     * @return ResponseEntity berisi byte[] gambar QR Code atau status error
+     */
+    @GetMapping("/my-transactions/ticket-image/{id}") // Nama endpoint baru untuk gambar tiket
+    public ResponseEntity<byte[]> getTicketImage(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Optional<User> userOptional = getLoggedInUser();
         if (userOptional.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Autentikasi diperlukan untuk mengunduh tiket.");
+            // Seharusnya sudah diatur oleh Spring Security, tapi untuk keamanan tambahan
+            redirectAttributes.addFlashAttribute("error", "Autentikasi diperlukan untuk melihat tiket.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized
         }
 
-        User loggedInUser = userOptional.get(); // Dapatkan pengguna yang sedang login
+        User loggedInUser = userOptional.get();
 
         Transaction transaction = transactionService.getTransactionById(id).orElse(null);
         if (transaction == null) {
             redirectAttributes.addFlashAttribute("error", "Tiket tidak ditemukan.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Lebih tepat 404 Not Found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
         }
 
-        // IZINKAN akses jika pengguna yang login adalah pemilik transaksi ATAU jika pengguna yang login adalah ADMIN
-        // Hanya tolak akses jika BUKAN pemilik DAN BUKAN ADMIN
+        // Kontrol akses di sini: hanya pemilik atau ADMIN yang boleh melihat
         if (!transaction.getUser().getId().equals(loggedInUser.getId()) && loggedInUser.getRole() != Role.ADMIN) {
             redirectAttributes.addFlashAttribute("error", "Anda tidak memiliki akses untuk melihat tiket ini.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
@@ -216,18 +223,62 @@ public class TransactionController {
 
         // Pastikan tiket sudah COMPLETED dan data tiketnya ada
         if (transaction.getStatus() != TransactionStatus.COMPLETED || transaction.getDataTiket() == null) {
-            redirectAttributes.addFlashAttribute("error", "Tiket belum siap atau tidak tersedia untuk diunduh.");
+            redirectAttributes.addFlashAttribute("error", "Tiket belum siap atau tidak tersedia.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         byte[] ticketImage = transaction.getDataTiket();
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG); // QR code akan disajikan sebagai PNG
-        headers.setContentDispositionFormData("attachment", "ticket_" + transaction.getId() + ".png"); // Nama file
+        // Hapus: headers.setContentDispositionFormData("attachment", "ticket_" + transaction.getId() + ".png");
         headers.setContentLength(ticketImage.length);
 
         return new ResponseEntity<>(ticketImage, headers, HttpStatus.OK);
+    }
+
+    /**
+     * Endpoint untuk menyediakan detail transaksi tiket dalam format JSON.
+     * Digunakan oleh JavaScript untuk mengisi pop-up.
+     * @param id ID transaksi
+     * @param redirectAttributes untuk pesan error
+     * @return ResponseEntity berisi TicketDetailsDto atau status error
+     */
+    @GetMapping("/my-transactions/ticket-details/{id}")
+    public ResponseEntity<TicketDetailsDto> getTicketDetails(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Optional<User> userOptional = getLoggedInUser();
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized
+        }
+
+        User loggedInUser = userOptional.get();
+
+        Transaction transaction = transactionService.getTransactionById(id).orElse(null);
+        if (transaction == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found
+        }
+
+        // Kontrol akses di sini: hanya pemilik atau ADMIN yang boleh melihat detail
+        if (!transaction.getUser().getId().equals(loggedInUser.getId()) && loggedInUser.getRole() != Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
+        }
+
+        // Pastikan tiket sudah COMPLETED
+        if (transaction.getStatus() != TransactionStatus.COMPLETED) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // Tiket belum siap
+        }
+
+        TicketDetailsDto dto = new TicketDetailsDto(
+            transaction.getId(),
+            transaction.getEvent().getNamaEvent(),
+            transaction.getUser().getUsername(),
+            transaction.getUser().getEmail(),
+            "/my-transactions/ticket-image/" + transaction.getId(), // URL untuk gambar QR code
+            transaction.getTotalHarga(),
+            transaction.getJumlahTiket()
+        );
+
+        return ResponseEntity.ok(dto);
     }
 
 

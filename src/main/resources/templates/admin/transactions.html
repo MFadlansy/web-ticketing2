@@ -12,6 +12,42 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+
+        /* Kelas untuk backdrop modal */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Kelas untuk modal content */
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4a5568;
+            /* gray-700 */
+        }
     </style>
 </head>
 
@@ -118,9 +154,11 @@
                                 class="text-gray-400 text-xs">Belum ada</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <a th:if="${transaction.dataTiket != null and transaction.dataTiket.length > 0}"
-                                th:href="@{/my-transactions/ticket/{id}(id=${transaction.id})}" target="_blank"
-                                class="text-purple-600 hover:text-purple-900">Lihat Tiket</a>
+                            <button
+                                th:if="${transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).COMPLETED and transaction.dataTiket != null}"
+                                th:onclick="'showTicketModal(' + ${transaction.id} + ')'"
+                                class="text-purple-600 hover:text-purple-900 mr-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Lihat
+                                Tiket</button>
                             <span th:unless="${transaction.dataTiket != null and transaction.dataTiket.length > 0}"
                                 class="text-gray-400 text-xs">Belum ada</span>
                         </td>
@@ -139,6 +177,97 @@
             </div>
         </div>
     </div>
+    <div id="ticketModal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeTicketModal()">&times;</span>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Detail Tiket</h3>
+            <img id="qrCodeImage" src="" alt="QR Code Tiket" class="w-48 h-48 mx-auto my-4 border p-2 rounded-md">
+            <p class="text-gray-700 text-lg font-semibold mb-1">Event: <span id="modalEventName"></span></p>
+            <p class="text-gray-700 text-md mb-1">Pengguna: <span id="modalUsername"></span></p>
+            <p class="text-gray-700 text-md mb-1">Email: <span id="modalUserEmail"></span></p>
+            <p class="text-gray-700 text-md mb-1">Jumlah Tiket: <span id="modalJumlahTiket"></span></p>
+            <p class="text-indigo-700 text-xl font-bold mt-2">Total Harga: Rp<span id="modalTotalHarga"></span></p>
+            <button onclick="downloadCurrentTicket()"
+                class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-150 ease-in-out">
+                Unduh Tiket (QR Code)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentTicketId = null; // Menyimpan ID tiket yang sedang ditampilkan di modal
+
+        async function showTicketModal(transactionId) {
+            currentTicketId = transactionId;
+            const modal = document.getElementById('ticketModal');
+            const qrCodeImage = document.getElementById('qrCodeImage');
+            const modalEventName = document.getElementById('modalEventName');
+            const modalUsername = document.getElementById('modalUsername');
+            const modalUserEmail = document.getElementById('modalUserEmail');
+            const modalJumlahTiket = document.getElementById('modalJumlahTiket');
+            const modalTotalHarga = document.getElementById('modalTotalHarga');
+
+            try {
+                const response = await fetch(`/my-transactions/ticket-details/${transactionId}`);
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        alert('Anda tidak memiliki izin untuk melihat tiket ini.');
+                    } else if (response.status === 404) {
+                        alert('Detail tiket tidak ditemukan.');
+                    } else if (response.status === 400) {
+                        alert('Tiket belum siap atau tidak tersedia.');
+                    } else {
+                        alert('Gagal mengambil detail tiket. Status: ' + response.status);
+                    }
+                    return;
+                }
+                const data = await response.json();
+
+                qrCodeImage.src = data.qrCodeImageUrl;
+                modalEventName.textContent = data.eventName;
+                modalUsername.textContent = data.username;
+                modalUserEmail.textContent = data.userEmail;
+                modalJumlahTiket.textContent = data.jumlahTiket;
+                modalTotalHarga.textContent = formatCurrency(data.totalHarga); // Format harga
+
+                modal.classList.remove('hidden'); // Tampilkan modal
+            } catch (error) {
+                console.error('Error fetching ticket details:', error);
+                alert('Terjadi kesalahan saat memuat detail tiket.');
+            }
+        }
+
+        function closeTicketModal() {
+            const modal = document.getElementById('ticketModal');
+            modal.classList.add('hidden'); // Sembunyikan modal
+            currentTicketId = null; // Reset ID tiket
+        }
+
+        // Fungsi untuk format mata uang
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID').format(amount);
+        }
+
+        // Fungsi untuk mengunduh tiket saat tombol di modal ditekan
+        function downloadCurrentTicket() {
+            if (currentTicketId) {
+                // Buat elemen <a> sementara untuk memicu unduhan
+                const link = document.createElement('a');
+                link.href = `/my-transactions/ticket-image/${currentTicketId}`;
+                link.download = `ticket_${currentTicketId}.png`; // Nama file yang akan diunduh
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // Menutup modal jika klik di luar area konten modal
+        document.getElementById('ticketModal').addEventListener('click', function (event) {
+            if (event.target === this) {
+                closeTicketModal();
+            }
+        });
+    </script>
 </body>
 
 </html>
