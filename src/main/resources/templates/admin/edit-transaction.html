@@ -71,13 +71,13 @@
                 </select>
             </div>
             <div class="mt-4 text-sm text-gray-600">
-                Tanggal Transaksi: <span th:text="${#temporals.format(transaction.tanggalTransaksi, 'dd MMMMchengladbach HH:mm')}"></span>
+                Tanggal Transaksi: <span th:text="${#temporals.format(transaction.tanggalTransaksi, 'dd MMMM HH:mm')}"></span>
             </div>
             <div th:if="${transaction.batasWaktuPembayaran != null}" class="mt-4 text-sm text-gray-600">
-                Batas Waktu Bayar: <span th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMMchengladbach HH:mm')}"></span>
+                Batas Waktu Bayar: <span th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMM HH:mm')}"></span>
             </div>
             <div th:if="${transaction.waktuUploadBukti != null}" class="mt-4 text-sm text-gray-600">
-                Waktu Upload Bukti: <span th:text="${#temporals.format(transaction.waktuUploadBukti, 'dd MMMMchengladbach HH:mm')}"></span>
+                Waktu Upload Bukti: <span th:text="${#temporals.format(transaction.waktuUploadBukti, 'dd MMMM HH:mm')}"></span>
             </div>
 
             <div class="mt-6">

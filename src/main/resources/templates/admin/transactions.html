@@ -97,16 +97,16 @@
                             th:classappend="${transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).PENDING_UPLOAD ? 'text-yellow-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).PENDING_CONFIRMATION ? 'text-blue-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).CONFIRMED ? 'text-green-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).COMPLETED ? 'text-purple-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).CANCELLED ? 'text-red-600' : ''))))}"
                             th:text="${transaction.status}"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                            th:text="${#temporals.format(transaction.tanggalTransaksi, 'dd MMMMchengladbach HH:mm')}">
+                            th:text="${#temporals.format(transaction.tanggalTransaksi, 'dd MMMM HH:mm')}">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <span th:if="${transaction.batasWaktuPembayaran}"
-                                th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMMchengladbach HH:mm')}"></span>
+                                th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMM HH:mm')}"></span>
                             <span th:unless="${transaction.batasWaktuPembayaran}">-</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <span th:if="${transaction.waktuUploadBukti}"
-                                th:text="${#temporals.format(transaction.waktuUploadBukti, 'dd MMMMchengladbach HH:mm')}"></span>
+                                th:text="${#temporals.format(transaction.waktuUploadBukti, 'dd MMMM HH:mm')}"></span>
                             <span th:unless="${transaction.waktuUploadBukti}">-</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">

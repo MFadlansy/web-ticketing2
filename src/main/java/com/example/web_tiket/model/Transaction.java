@@ -44,7 +44,7 @@ public class Transaction {
     private Double totalHarga;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 25)
     private TransactionStatus status;
 
     @Column(nullable = false)

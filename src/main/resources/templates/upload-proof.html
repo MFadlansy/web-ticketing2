@@ -35,7 +35,7 @@
             <p class="text-lg font-bold text-indigo-700 mt-2">Total Harga: Rp<span
                     th:text="${#numbers.formatDecimal(transaction.totalHarga, 0, 'POINT', 0, 'COMMA')}"></span></p>
             <p class="text-sm text-red-600 font-semibold mt-2">Batas Waktu Pembayaran: <span
-                    th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMM Geißler HH:mm:ss')}"></span></p>
+                    th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMM HH:mm:ss')}"></span></p>
             <p th:if="${transaction.batasWaktuPembayaran.isBefore(localDateTime)}" class="text-red-700 font-bold mt-2">
                 Batas waktu pembayaran telah habis!
             </p>

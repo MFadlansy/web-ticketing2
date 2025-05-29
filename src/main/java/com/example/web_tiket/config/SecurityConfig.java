@@ -1,4 +1,3 @@
-// mfadlansy/web-ticketing/web-ticketing-3e64247b7580408a08f558843e96b55c1b4818e9/src/main/java/com/example/web_tiket/config/SecurityConfig.java
 package com.example.web_tiket.config;
 
 import org.springframework.context.annotation.Bean;
@@ -41,16 +40,20 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 // Mengizinkan akses tanpa autentikasi ke halaman root, registrasi, login, daftar event, detail event, dan GAMBAR EVENT
                 .requestMatchers("/", "/register", "/login", "/css/**", "/js/**", "/events", "/events/{id}").permitAll()
-                // >>> Tambahkan baris ini untuk mengizinkan akses ke gambar event <<<
-                .requestMatchers("/events/image/{id}").permitAll() // Izinkan akses ke gambar event
+                // Izinkan akses ke gambar event
+                .requestMatchers("/events/image/{id}").permitAll()
 
                 // Memastikan form order tiket memerlukan autentikasi
                 .requestMatchers("/events/{id}/order").authenticated()
-                
+
+                // Izinkan USER dan ADMIN untuk melihat transaksi mereka sendiri dan tiket/bukti
+                // PENTING: Aturan ini harus di atas aturan /admin/** yang lebih umum
+                .requestMatchers("/my-transactions/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
+                .requestMatchers("/admin/transactions/proof/{id}").hasAnyRole(Role.USER.name(), Role.ADMIN.name()) // <--- BARIS BARU INI
+
                 // Membatasi akses ke URL yang diawali dengan /admin/** hanya untuk pengguna dengan peran ADMIN
                 .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
-                // Hanya user dengan role USER yang bisa melihat transaksi mereka sendiri
-                .requestMatchers("/my-transactions/**").hasRole(Role.USER.name())
+                
                 // Semua permintaan lainnya memerlukan autentikasi
                 .anyRequest().authenticated()
             )

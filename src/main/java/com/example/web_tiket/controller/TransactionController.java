@@ -23,15 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.web_tiket.model.Event;
+import com.example.web_tiket.model.Role; // Pastikan ini diimpor
 import com.example.web_tiket.model.Transaction;
 import com.example.web_tiket.model.Transaction.TransactionStatus;
 import com.example.web_tiket.model.User;
 import com.example.web_tiket.repository.UserRepository;
 import com.example.web_tiket.service.EventService;
 import com.example.web_tiket.service.TransactionService;
-
-// Import for ZXing exception
-import com.google.zxing.WriterException;
 
 
 @Controller
@@ -198,13 +196,22 @@ public class TransactionController {
         Optional<User> userOptional = getLoggedInUser();
         if (userOptional.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Autentikasi diperlukan untuk mengunduh tiket.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized
         }
 
+        User loggedInUser = userOptional.get(); // Dapatkan pengguna yang sedang login
+
         Transaction transaction = transactionService.getTransactionById(id).orElse(null);
-        if (transaction == null || !transaction.getUser().getId().equals(userOptional.get().getId())) {
-            redirectAttributes.addFlashAttribute("error", "Tiket tidak ditemukan atau Anda tidak memiliki akses.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (transaction == null) {
+            redirectAttributes.addFlashAttribute("error", "Tiket tidak ditemukan.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Lebih tepat 404 Not Found
+        }
+
+        // IZINKAN akses jika pengguna yang login adalah pemilik transaksi ATAU jika pengguna yang login adalah ADMIN
+        // Hanya tolak akses jika BUKAN pemilik DAN BUKAN ADMIN
+        if (!transaction.getUser().getId().equals(loggedInUser.getId()) && loggedInUser.getRole() != Role.ADMIN) {
+            redirectAttributes.addFlashAttribute("error", "Anda tidak memiliki akses untuk melihat tiket ini.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 Forbidden
         }
 
         // Pastikan tiket sudah COMPLETED dan data tiketnya ada
@@ -340,9 +347,9 @@ public class TransactionController {
                         // Anda mungkin perlu logika untuk mendeteksi tipe gambar sebenarnya
                         return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
                     } else {
-                        return ResponseEntity.notFound().build();
+                        return ResponseEntity.notFound().<byte[]>build(); // Tambahkan <byte[]> di sini
                     }
                 })
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().<byte[]>build());
     }
 }
