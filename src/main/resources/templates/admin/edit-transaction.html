@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Transaksi - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .proof-image-display, .ticket-image-display {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-indigo-600 p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/dashboard" class="text-white text-2xl font-bold">TiketApp Admin</a>
+            <div class="flex items-center space-x-4">
+                <span class="text-white">Selamat datang, Admin!</span>
+                <a th:href="@{/logout}" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-8 mt-8 bg-white rounded-lg shadow-xl w-full max-w-md">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Edit Transaksi</h1>
+
+        <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+            <span class="block sm:inline" th:text="${error}"></span>
+        </div>
+        <div th:if="${message}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+            <span class="block sm:inline" th:text="${message}"></span>
+        </div>
+
+        <form th:action="@{/admin/transactions/update/{id}(id=${transaction.id})}" th:object="${transaction}" method="post" class="space-y-6">
+            <input type="hidden" th:field="*{id}" />
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Pengguna:</label>
+                <input type="text" id="username" th:value="${transaction.user.username}" readonly
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm">
+            </div>
+            <div>
+                <label for="eventName" class="block text-sm font-medium text-gray-700 mb-1">Event:</label>
+                <input type="text" id="eventName" th:value="${transaction.event.namaEvent}" readonly
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm">
+            </div>
+            <div>
+                <label for="jumlahTiket" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tiket:</label>
+                <input type="number" id="jumlahTiket" th:field="*{jumlahTiket}" min="1" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="totalHarga" class="block text-sm font-medium text-gray-700 mb-1">Total Harga:</label>
+                <input type="number" id="totalHarga" th:field="*{totalHarga}" step="0.01" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status:</label>
+                <select id="status" th:field="*{status}" required
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option th:each="statusOption : ${transactionStatuses}" th:value="${statusOption}" th:text="${statusOption}"></option>
+                </select>
+            </div>
+            <div class="mt-4 text-sm text-gray-600">
+                Tanggal Transaksi: <span th:text="${#temporals.format(transaction.tanggalTransaksi, 'dd MMMMchengladbach HH:mm')}"></span>
+            </div>
+            <div th:if="${transaction.batasWaktuPembayaran != null}" class="mt-4 text-sm text-gray-600">
+                Batas Waktu Bayar: <span th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMMchengladbach HH:mm')}"></span>
+            </div>
+            <div th:if="${transaction.waktuUploadBukti != null}" class="mt-4 text-sm text-gray-600">
+                Waktu Upload Bukti: <span th:text="${#temporals.format(transaction.waktuUploadBukti, 'dd MMMMchengladbach HH:mm')}"></span>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Bukti Pembayaran:</h3>
+                <div th:if="${transaction.buktiPembayaran != null and transaction.buktiPembayaran.length > 0}">
+                    <a th:href="@{/admin/transactions/proof/{id}(id=${transaction.id})}" target="_blank" class="text-blue-600 hover:underline">
+                        Lihat Bukti Pembayaran (Klik untuk buka di tab baru)
+                    </a>
+                    <img th:src="@{/admin/transactions/proof/{id}(id=${transaction.id})}" alt="Bukti Pembayaran" class="proof-image-display mt-2">
+                </div>
+                <div th:unless="${transaction.buktiPembayaran != null and transaction.buktiPembayaran.length > 0}">
+                    <p class="text-sm text-gray-500">Belum ada bukti pembayaran diupload.</p>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Data Tiket:</h3>
+                <div th:if="${transaction.dataTiket != null and transaction.dataTiket.length > 0}">
+                    <a th:href="@{/my-transactions/ticket/{id}(id=${transaction.id})}" target="_blank" class="text-purple-600 hover:underline">
+                        Lihat/Download Tiket (Klik untuk buka di tab baru)
+                    </a>
+                    <img th:src="@{/my-transactions/ticket/{id}(id=${transaction.id})}" alt="Tiket QR Code" class="ticket-image-display mt-2">
+                </div>
+                <div th:unless="${transaction.dataTiket != null and transaction.dataTiket.length > 0}">
+                    <p class="text-sm text-gray-500">Tiket belum dibuat. (Akan dibuat saat status COMPLETED)</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button type="submit"
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    Simpan Perubahan
+                </button>
+                <a th:href="@{/admin/transactions}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    Batal
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

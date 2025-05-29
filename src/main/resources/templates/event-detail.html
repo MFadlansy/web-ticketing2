@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${event.namaEvent} + ' Detail'"></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <nav class="bg-indigo-600 p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/dashboard" class="text-white text-2xl font-bold">TiketApp</a>
+            <div class="flex items-center space-x-4">
+                <div sec:authorize="isAuthenticated()" th:if="${username != null}">
+                    <span class="text-white">Selamat datang, <span th:text="${username}"></span>!</span>
+                    <a th:href="@{/logout}"
+                        class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out">Logout</a>
+                </div>
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/events}" class="text-white hover:text-gray-200">Kembali ke Event</a>
+                    <a th:href="@{/login}" class="text-white hover:text-gray-200">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-8 mt-8 bg-white rounded-lg shadow-xl">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8" th:text="${event.namaEvent}">Event Name</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div>
+                <img th:if="${event.gambar != null and event.gambar.length > 0}"
+                    th:src="@{/events/image/{id}(id=${event.id})}" alt="Event Image"
+                    class="w-full h-auto rounded-lg shadow-md">
+                <div th:unless="${event.gambar != null and event.gambar.length > 0}"
+                    class="w-full h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg shadow-md">
+                    Tidak ada gambar
+                </div>
+            </div>
+            <div>
+                <p class="text-lg text-gray-700 mb-4"><span class="font-semibold">Deskripsi:</span> <span
+                        th:text="${event.deskripsi}"></span></p>
+                <ul class="text-gray-700 space-y-2">
+                    <li><span class="font-semibold">Tipe Event:</span> <span th:text="${event.tipeEvent}"></span></li>
+                    <li><span class="font-semibold">Tanggal:</span> <span
+                            th:text="${#temporals.format(event.tanggal, 'dd MMMM yyyy')}"></span></li>
+                    <li><span class="font-semibold">Lokasi:</span> <span th:text="${event.lokasi}"></span></li>
+                    <li class="text-2xl font-bold text-indigo-700 mt-4">Harga Tiket: Rp<span
+                            th:text="${#numbers.formatDecimal(event.hargaTiket, 0, 'POINT', 0, 'COMMA')}"></span></li>
+                </ul>
+                <a th:href="@{/events/{id}/order(id=${event.id})}"
+                    class="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                    Pesan Tiket
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

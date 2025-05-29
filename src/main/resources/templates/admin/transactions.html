@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Transaksi - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <nav class="bg-indigo-600 p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/dashboard" class="text-white text-2xl font-bold">TiketApp Admin</a>
+            <div class="flex items-center space-x-4">
+                <span class="text-white">Selamat datang, Admin!</span>
+                <a th:href="@{/logout}"
+                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-8 mt-8 bg-white rounded-lg shadow-xl">
+        <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Kelola Transaksi</h1>
+
+        <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative mb-4"
+            role="alert">
+            <span class="block sm:inline" th:text="${error}"></span>
+        </div>
+        <div th:if="${message}"
+            class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md relative mb-4" role="alert">
+            <span class="block sm:inline" th:text="${message}"></span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID
+                            Transaksi</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Pengguna</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Jumlah Tiket</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total
+                            Harga</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tanggal Transaksi</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batas
+                            Waktu Bayar</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu
+                            Upload Bukti</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti
+                            Pembayaran</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiket
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr th:each="transaction : ${transactions}">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                            th:text="${transaction.id}"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                            th:text="${transaction.user.username}"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                            th:text="${transaction.event.namaEvent}"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                            th:text="${transaction.jumlahTiket}"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                            th:text="${#numbers.formatDecimal(transaction.totalHarga, 0, 'POINT', 0, 'COMMA')}"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm"
+                            th:classappend="${transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).PENDING_UPLOAD ? 'text-yellow-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).PENDING_CONFIRMATION ? 'text-blue-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).CONFIRMED ? 'text-green-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).COMPLETED ? 'text-purple-600' : (transaction.status == T(com.example.web_tiket.model.Transaction.TransactionStatus).CANCELLED ? 'text-red-600' : ''))))}"
+                            th:text="${transaction.status}"></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                            th:text="${#temporals.format(transaction.tanggalTransaksi, 'dd MMMMchengladbach HH:mm')}">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span th:if="${transaction.batasWaktuPembayaran}"
+                                th:text="${#temporals.format(transaction.batasWaktuPembayaran, 'dd MMMMchengladbach HH:mm')}"></span>
+                            <span th:unless="${transaction.batasWaktuPembayaran}">-</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span th:if="${transaction.waktuUploadBukti}"
+                                th:text="${#temporals.format(transaction.waktuUploadBukti, 'dd MMMMchengladbach HH:mm')}"></span>
+                            <span th:unless="${transaction.waktuUploadBukti}">-</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a th:if="${transaction.buktiPembayaran != null and transaction.buktiPembayaran.length > 0}"
+                                th:href="@{/admin/transactions/proof/{id}(id=${transaction.id})}" target="_blank"
+                                class="text-blue-600 hover:text-blue-900">Lihat Bukti</a>
+                            <span
+                                th:unless="${transaction.buktiPembayaran != null and transaction.buktiPembayaran.length > 0}"
+                                class="text-gray-400 text-xs">Belum ada</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a th:if="${transaction.dataTiket != null and transaction.dataTiket.length > 0}"
+                                th:href="@{/my-transactions/ticket/{id}(id=${transaction.id})}" target="_blank"
+                                class="text-purple-600 hover:text-purple-900">Lihat Tiket</a>
+                            <span th:unless="${transaction.dataTiket != null and transaction.dataTiket.length > 0}"
+                                class="text-gray-400 text-xs">Belum ada</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a th:href="@{/admin/transactions/edit/{id}(id=${transaction.id})}"
+                                class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                            <a th:href="@{/admin/transactions/delete/{id}(id=${transaction.id})}"
+                                class="text-red-600 hover:text-red-900"
+                                onclick="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?');">Hapus</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(transactions)}" class="text-center text-gray-500 mt-4">
+                Belum ada transaksi.
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
