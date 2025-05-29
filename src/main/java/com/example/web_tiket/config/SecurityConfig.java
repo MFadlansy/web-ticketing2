@@ -46,14 +46,16 @@ public class SecurityConfig {
                 // Memastikan form order tiket memerlukan autentikasi
                 .requestMatchers("/events/{id}/order").authenticated()
 
-                // Izinkan USER dan ADMIN untuk melihat transaksi mereka sendiri dan tiket/bukti
-                // PENTING: Aturan ini harus di atas aturan /admin/** yang lebih umum
+                // Izinkan USER dan ADMIN untuk melihat transaksi mereka sendiri, tiket/bukti, dan profil
                 .requestMatchers("/my-transactions/**").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
-                .requestMatchers("/admin/transactions/proof/{id}").hasAnyRole(Role.USER.name(), Role.ADMIN.name()) // <--- BARIS BARU INI
+                .requestMatchers("/admin/transactions/proof/{id}").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
+                .requestMatchers("/my-transactions/ticket-image/{id}").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
+                .requestMatchers("/my-transactions/ticket-details/{id}").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
+                .requestMatchers("/profile", "/profile/update").hasAnyRole(Role.USER.name(), Role.ADMIN.name()) // <--- BARIS BARU INI
 
                 // Membatasi akses ke URL yang diawali dengan /admin/** hanya untuk pengguna dengan peran ADMIN
                 .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
-                
+
                 // Semua permintaan lainnya memerlukan autentikasi
                 .anyRequest().authenticated()
             )

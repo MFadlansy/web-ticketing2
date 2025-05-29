@@ -1,6 +1,7 @@
 package com.example.web_tiket.controller;
 
 import java.util.List;
+import java.util.Optional; // Import Optional
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,17 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
+    // Helper method untuk mendapatkan user yang sedang login
+    private Optional<User> getLoggedInUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            return Optional.empty();
+        }
+        String username = authentication.getName();
+        return userService.findByUsername(username); // Menggunakan userService untuk mencari user
+    }
+
 
     // --- Endpoints untuk Registrasi dan Login ---
 
@@ -77,6 +89,49 @@ public class UserController {
         model.addAttribute("roles", authentication.getAuthorities());
         return "dashboard"; // Mengembalikan nama view (dashboard.html)
     }
+
+    // --- New Endpoints for User Profile ---
+
+    // Menampilkan halaman profil pengguna yang sedang login
+    @GetMapping("/profile")
+    public String showProfile(Model model, RedirectAttributes redirectAttributes) {
+        Optional<User> userOptional = getLoggedInUser();
+        if (userOptional.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Pengguna tidak ditemukan. Silakan login ulang.");
+            return "redirect:/login";
+        }
+        model.addAttribute("user", userOptional.get());
+        return "profile"; // Mengembalikan nama view (profile.html)
+    }
+
+    // Memproses pembaruan profil pengguna yang sedang login
+    @PostMapping("/profile/update")
+    public String updateProfile(@ModelAttribute("user") User user, RedirectAttributes redirectAttributes) {
+        Optional<User> currentUserOptional = getLoggedInUser();
+        if (currentUserOptional.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Pengguna tidak ditemukan. Silakan login ulang.");
+            return "redirect:/login";
+        }
+
+        User currentUser = currentUserOptional.get();
+        // Pastikan ID user yang diperbarui adalah ID user yang sedang login
+        if (!currentUser.getId().equals(user.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Anda tidak memiliki izin untuk mengubah profil pengguna lain.");
+            return "redirect:/profile";
+        }
+
+        // Set role kembali ke role user yang sedang login untuk mencegah perubahan role melalui form
+        user.setRole(currentUser.getRole());
+
+        User updated = userService.updateUser(user.getId(), user); // Menggunakan service untuk update
+        if (updated != null) {
+            redirectAttributes.addFlashAttribute("message", "Profil berhasil diperbarui.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Gagal memperbarui profil. Mungkin email sudah terdaftar.");
+        }
+        return "redirect:/profile";
+    }
+
 
     // --- Endpoints untuk CRUD Data User oleh Admin ---
 
